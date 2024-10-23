@@ -1,3 +1,5 @@
+@extends('layout.master')
+@section('content') 
 <div class="container">
     <h4>Edit Buku</h4>
     <form method="POST" action="{{ route('buku.update', $buku->id) }}">
@@ -21,10 +23,11 @@
 
     <div>
         <label>Tanggal Terbit</label>
-        <input type="date" name="tgl_terbit" value="{{ $buku->tgl_terbit->format('Y-m-d') }}">
+        <input type="date" name="tgl_terbit" class="date form-control" placeholder="yyyy/mm/dd" value="{{ $buku->tgl_terbit->format('Y-m-d') }}">
     </div>
 
     <button type="submit" class="btn btn-primary">Simpan</button>
     <a href="{{'/buku'}}">Kembali</a>
 </form>
 </div>
+@endsection

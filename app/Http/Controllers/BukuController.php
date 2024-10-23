@@ -13,6 +13,10 @@ class BukuController extends Controller
     public function index()
     {
         $data_buku = Buku::all();
+        $batas = 5;
+        $jumlah_buku = Buku::count();
+        $data_buku_urut = Buku::orderBy('id', 'desc')->paginate($batas);
+        $no = $batas * ($data_buku_urut -> currentPage() - 1);
 
         // Menghitung jumlah total data buku
         $total_books = $data_buku->count();
@@ -20,7 +24,7 @@ class BukuController extends Controller
         // Menghitung jumlah total harga semua buku
         $total_price = $data_buku->sum('harga');
 
-        return view('buku.index', compact('data_buku', 'total_books', 'total_price' ));
+        return view('buku.index', compact('data_buku', 'total_books', 'total_price', 'data_buku_urut', 'no', 'jumlah_buku' ));
     }
 
     /**
@@ -36,6 +40,21 @@ class BukuController extends Controller
      */
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'judul' => 'required|string',
+            'penulis' => 'required|string|max:30',
+            'harga' => 'required|numeric',
+            'tgl_terbit' => 'required|date'
+        ], [
+            'judul.required' => 'Judul buku harus diisi.',
+            'penulis.required' => 'Nama penulis harus diisi.',
+            'penulis.max' => 'Nama penulis tidak boleh lebih dari 30 karakter.',
+            'harga.required' => 'Harga buku harus diisi.',
+            'harga.numeric' => 'Harga buku harus berupa angka.',
+            'tgl_terbit.required' => 'Tanggal terbit harus diisi.',
+            'tgl_terbit.date' => 'Tanggal terbit harus dalam format tanggal yang benar.'
+        ]);
+
         $buku = new Buku();
         $buku->judul = $request->judul;
         $buku->penulis = $request->penulis;
@@ -43,7 +62,7 @@ class BukuController extends Controller
         $buku->tgl_terbit = $request->tgl_terbit;
         $buku->save();
 
-        return redirect('/buku');
+        return redirect('/buku')->with('pesan', 'Data Buku Berhasil disimpan');
         
     }
 
@@ -83,7 +102,7 @@ class BukuController extends Controller
     $buku->save();
 
     // Redirect ke halaman daftar buku dengan pesan sukses
-    return redirect('/buku');
+    return redirect('/buku')->with('pesanUpdate', 'Data Buku Berhasil diperbarui');
     }
 
     /**
@@ -94,6 +113,16 @@ class BukuController extends Controller
         $buku = Buku::find($id);
         $buku->delete();
 
-        return redirect('/buku');
+        return redirect('/buku')->with('pesanDelete', 'Data Buku Berhasil dihapus');
+    }
+
+    public function search(Request $request)
+    {
+        $batas = 5;
+        $cari = $request->kata;
+        $data_buku = Buku::where('judul', 'like', "%".$cari."%")->orWhere('penulis', 'like', "%".$cari."%")->paginate($batas);
+        $jumlah_buku = $data_buku->count();
+        $no = $batas * ($data_buku->currentPage()-1);
+        return view('buku.search', compact('jumlah_buku', 'data_buku', 'no', 'cari'));
     }
 }

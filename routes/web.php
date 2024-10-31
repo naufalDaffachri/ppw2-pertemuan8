@@ -13,7 +13,11 @@ use App\Http\Controllers\BukuController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+Auth::routes([
+    'register' => false,
+    'reset' => false,
+    ]);
+    
 Route::get('/', function () {
     return view('welcome');
 });
@@ -34,3 +38,7 @@ Route::get('/buku/search', [BukuController::class, 'search'])->name('buku.search
 
 
 
+
+
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

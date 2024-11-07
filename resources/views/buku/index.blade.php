@@ -51,6 +51,7 @@
                 <td>{{$buku->penulis}}</td>
                 <td>{{ number_format($buku->harga, 0, ',', '.') }}</td>
                 <td>{{ $buku->tgl_terbit->format('d/m/Y')}}</td>
+                @if(Auth::check() && Auth::user()->role=='admin')
                 <td> 
                 <form action="{{ route('buku.destroy', $buku->id) }}" method="POST" class="d-inline">
                 @csrf 
@@ -61,6 +62,7 @@
                 <button onclick="return confirm('Yakin mau diedit?')" type="submit" class="btn btn-warning">Edit</button>
                 </form>
                 </td>
+                @endif
             </tr>
             @endforeach
         </tbody>
@@ -71,5 +73,5 @@
     <p><strong>Total Buku:</strong> {{ $total_books }}</p>
     <!-- Menampilkan jumlah total harga semua buku -->
     <p><strong>Total Harga Semua Buku:</strong> Rp {{ number_format($total_price, 0, ',', '.') }}</p>
-    
+
     @endsection

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Buku;
+use Image;
+use App\Models\Gallery;
+
 
 class BukuController extends Controller
 {
@@ -62,6 +65,7 @@ class BukuController extends Controller
         $buku->tgl_terbit = $request->tgl_terbit;
         $buku->save();
 
+
         return redirect('/buku')->with('pesan', 'Data Buku Berhasil disimpan');
         
     }
@@ -94,12 +98,48 @@ class BukuController extends Controller
     // Cari buku berdasarkan ID
     $buku = Buku::findOrFail($id);
 
-    // Update data buku
-    $buku->judul = $request->judul;
-    $buku->penulis = $request->penulis;
-    $buku->harga = $request->harga;
-    $buku->tgl_terbit = $request->tgl_terbit;
-    $buku->save();
+    //tambahan pertemuan 11
+    $request->validate([
+        'thumbnail' => 'image|mimes:jpeg,jpg,png|max:2048'
+    ]);
+
+
+    $fileName = time().'_'.$request->thumbnail->getClientOriginalName();
+    $filePath = $request->file('thumbnail')->storeAs('uploads', $fileName, 'public');
+
+    Image::make(storage_path().'/app/public/uploads/'.$fileName)
+    ->fit(240,320)
+    ->save();
+
+    $buku->update([
+        'judul' => $request->judul,
+        'penulis' => $request->penulis,
+        'harga' => $request->harga,
+        'tgl_terbit' => $request->tgl_terbit,
+        'filename' => $fileName,
+        'filepath' => '/storage/'.$filePath
+    ]);
+
+    if ($request->file('gallery')) {
+        foreach($request->file('gallery') as $key => $file) {
+            $fileName = time().'_'.$file->getClientOriginalName();
+            $filePath = $file->storeAs('uploads', $fileName, 'public');
+
+            $gallery = Gallery::create([
+                'nama_galeri' => $fileName,
+                'path' => '/storage'.$filePath,
+                'foto' => $fileName,
+                'buku_id' => $id
+            ]);
+        }
+    }
+
+    // Update data buku (sebelum pertemuan 11)
+    //$buku->judul = $request->judul;
+    //$buku->penulis = $request->penulis;
+    //$buku->harga = $request->harga;
+    //$buku->tgl_terbit = $request->tgl_terbit;
+    //$buku->save();
 
     // Redirect ke halaman daftar buku dengan pesan sukses
     return redirect('/buku')->with('pesanUpdate', 'Data Buku Berhasil diperbarui');
@@ -124,5 +164,16 @@ class BukuController extends Controller
         $jumlah_buku = $data_buku->count();
         $no = $batas * ($data_buku->currentPage()-1);
         return view('buku.search', compact('jumlah_buku', 'data_buku', 'no', 'cari'));
+    }
+    public function deleteGalleryImage(Buku $buku, Gallery $gallery){
+        if ($gallery->books_id !== $buku->id) {
+            return redirect()->back()->with('error', 'Gambar tidak ditemukan untuk buku ini.');
+        }
+        $storagePath = str_replace('/storage/', 'public/', $gallery->path);
+        if (Storage::exists($storagePath)) {
+            Storage::delete($storagePath);
+        }
+        $gallery->delete();
+        return redirect()->route('buku.edit', $buku->id)->with('pesanHapus', 'Gambar berhasil dihapus.');
     }
 }

@@ -45,8 +45,21 @@
         </thead>
         <tbody>
             @foreach($data_buku_urut as $index => $buku)
+            @if($buku->filepath)
+        @endif
             <tr>
                 <td>{{ $index+1}}</td>
+                <td>
+                    @if ($buku->filepath)
+                        <div class="relative h-10 w-10">
+                            <img 
+                                class="h-full w-full rounded-full object-cover object-center" 
+                                src="{{ asset($buku->filepath) }}" 
+                                alt="Gambar Buku"
+                            />
+                        </div>
+                    @endif
+
                 <td>{{$buku->judul}}</td>
                 <td>{{$buku->penulis}}</td>
                 <td>{{ number_format($buku->harga, 0, ',', '.') }}</td>

@@ -42,3 +42,5 @@ Route::get('/buku/search', [BukuController::class, 'search'])->name('buku.search
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::delete('/buku/{buku}/gallery/{gallery}', [BukuController::class, 'deleteGalleryImage'])->name('buku.deleteGalleryImage');

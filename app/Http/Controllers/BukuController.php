@@ -18,7 +18,7 @@ class BukuController extends Controller
         $data_buku = Buku::all();
         $batas = 5;
         $jumlah_buku = Buku::count();
-        $data_buku_urut = Buku::orderBy('id', 'desc')->paginate($batas);
+        $data_buku_urut = Buku::with('reviews')->orderBy('id', 'desc')->paginate(5);
         $no = $batas * ($data_buku_urut -> currentPage() - 1);
 
         // Menghitung jumlah total data buku
@@ -43,19 +43,13 @@ class BukuController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'judul' => 'required|string',
-            'penulis' => 'required|string|max:30',
-            'harga' => 'required|numeric',
-            'tgl_terbit' => 'required|date'
-        ], [
-            'judul.required' => 'Judul buku harus diisi.',
-            'penulis.required' => 'Nama penulis harus diisi.',
-            'penulis.max' => 'Nama penulis tidak boleh lebih dari 30 karakter.',
-            'harga.required' => 'Harga buku harus diisi.',
-            'harga.numeric' => 'Harga buku harus berupa angka.',
-            'tgl_terbit.required' => 'Tanggal terbit harus diisi.',
-            'tgl_terbit.date' => 'Tanggal terbit harus dalam format tanggal yang benar.'
+        $request->validate([
+            'judul'       => 'required|string',
+            'penulis'     => 'required|string|max:30',
+            'harga'       => 'required|numeric',
+            'tgl_terbit'  => 'required|date',
+            'thumbnail'   => 'image|mimes:jpeg,jpg,png|max:2048',
+            'gallery.*'   => 'image|mimes:jpeg,jpg,png|max:2048'
         ]);
 
         $buku = new Buku();
@@ -63,11 +57,37 @@ class BukuController extends Controller
         $buku->penulis = $request->penulis;
         $buku->harga = $request->harga;
         $buku->tgl_terbit = $request->tgl_terbit;
+
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailFile = $request->file('thumbnail');
+            $thumbnailName = time() . ' ' . $thumbnailFile->getClientOriginalName();
+            $thumbnailPath = $thumbnailFile->storeAs('uploads', $thumbnailName, 'public');
+
+            Image::make(storage_path('app/public/uploads/' . $thumbnailName))
+                ->fit(240, 320)
+                ->save();
+
+            $buku->filename = $thumbnailName;
+            $buku->filepath = '/storage/' . $thumbnailPath;
+        }
+
         $buku->save();
 
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $file) {
+                $fileName = time() . ' ' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('uploads', $fileName, 'public');
 
-        return redirect('/buku')->with('pesan', 'Data Buku Berhasil disimpan');
-        
+                Gallery::create([
+                    'nama_galeri' => $fileName,
+                    'path'        => '/storage/' . $filePath,
+                    'foto'        => $fileName,
+                    'buku_id'     => $buku->id
+                ]);
+            }
+        }
+
+        return redirect('/buku')->with('pesan', 'Data buku berhasil disimpan');
     }
 
     /**

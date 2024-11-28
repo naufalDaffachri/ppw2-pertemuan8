@@ -34,10 +34,7 @@
                 <div class="mt-2">
                     <input type="file" name="thumbnail" id="thumbnail">
                 </div>
-            </div>
-
-
-                
+            
                 @if($buku->galleries()->count() > 0)
                 <div class="gallery_items mt-5">
                     @foreach($buku->galleries()->get() as $gallery)
@@ -51,10 +48,11 @@
                         </div>
                     @endforeach
                 </div>
-            @endif
+                @endif
+
                     <div class="btn btn-primary">
                         <a id="tambah" onclick="addFileInput()">Tambah Input data</a>
-</div>
+                    
 
                     <script type="text/javascript">
                         function addFileInput() {
@@ -62,22 +60,24 @@
                             div.innerHTML += '<input type="file" name="gallery[]" id="gallery" class="block w-full mb-5" style="margin-bottom:5px;">';
                         };
                     </script>
-      </div>
-      <div class="gallery_items">
-        @foreach($buku->galleries()->get() as $gallery)
-        <div class="gallery_item">
-            <img 
-            class="rounded-full object-cover object-center"
-            src="{{asset($gallery->path)}}"
-            alt=""
-            width="400"
-            />
-        </div>
-        @endforeach
-      </div>
+                    </div>
 
-    <button type="submit" class="btn btn-primary">Simpan</button>
-    <a href="{{'/buku'}}">Kembali</a>
-</form>
+                <div class="gallery_items">
+                @foreach($buku->galleries()->get() as $gallery)
+                <div class="gallery_item">
+                <img 
+                class="rounded-full object-cover object-center"
+                src="{{asset($gallery->path)}}"
+                alt=""
+                width="400"
+                />
+                </div>
+                @endforeach
+                </div>
+
+           <button type="submit" class="btn btn-primary">Simpan</button>
+           <a href="{{'/buku'}}">Kembali</a>
+        </form>
+    </div>
 </div>
 @endsection

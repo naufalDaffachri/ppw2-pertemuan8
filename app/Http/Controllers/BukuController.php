@@ -7,7 +7,6 @@ use App\Models\Buku;
 use Image;
 use App\Models\Gallery;
 
-
 class BukuController extends Controller
 {
     /**
@@ -71,8 +70,6 @@ class BukuController extends Controller
             $buku->filepath = '/storage/' . $thumbnailPath;
         }
 
-        $buku->save();
-
         if ($request->hasFile('gallery')) {
             foreach ($request->file('gallery') as $file) {
                 $fileName = time() . ' ' . $file->getClientOriginalName();
@@ -86,6 +83,8 @@ class BukuController extends Controller
                 ]);
             }
         }
+        
+        $buku->save();
 
         return redirect('/buku')->with('pesan', 'Data buku berhasil disimpan');
     }
@@ -179,12 +178,19 @@ class BukuController extends Controller
     public function search(Request $request)
     {
         $batas = 5;
-        $cari = $request->kata;
-        $data_buku = Buku::where('judul', 'like', "%".$cari."%")->orWhere('penulis', 'like', "%".$cari."%")->paginate($batas);
+        $cari = $request->input('kata');  // Mengambil input pencarian dari form
+        
+        // Pastikan kita melakukan pencarian yang benar pada kolom yang diinginkan
+        $data_buku = Buku::where('judul', 'like', "%".$cari."%")
+                         ->orWhere('penulis', 'like', "%".$cari."%")
+                         ->paginate($batas);
+    
         $jumlah_buku = $data_buku->count();
-        $no = $batas * ($data_buku->currentPage()-1);
+        $no = $batas * ($data_buku->currentPage() - 1);
+        
         return view('buku.search', compact('jumlah_buku', 'data_buku', 'no', 'cari'));
     }
+
     public function deleteGalleryImage(Buku $buku, Gallery $gallery){
         if ($gallery->books_id !== $buku->id) {
             return redirect()->back()->with('error', 'Gambar tidak ditemukan untuk buku ini.');

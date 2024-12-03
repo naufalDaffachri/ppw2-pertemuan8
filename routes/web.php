@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\EditorialPickController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/buku', [BukuController::class, 'index']);
+Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
 
 Route::get('/buku/create', [BukuController::class, 'create'])->name('buku.create');
 
@@ -36,6 +37,10 @@ Route::get('/buku/{id}/edit', [BukuController::class, 'edit'])->name('buku.edit'
 Route::put('/buku/{id}', [BukuController::class, 'update'])->name('buku.update');
 
 Route::get('/buku/search', [BukuController::class, 'search'])->name('buku.search');
+
+Route::get('/buku/editorialpick', [EditorialPickController::class, 'editorialpick'])->name('buku.editorialpick');
+
+Route::post('/buku', [EditorialPickController::class, 'saveeditorialpick'])->name('buku.saveeditorialpick');
 
 
 
